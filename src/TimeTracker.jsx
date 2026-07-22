@@ -107,7 +107,7 @@ export default function TimeTracker(){
   const monthWorkoutDays=useMemo(()=>Object.entries(workouts).filter(([k])=>monthKey(k)===monthKey(date)),[workouts,date]);
   const setWorkoutFull=(k,kind,type)=>setWorkouts(prev=>{const next={...prev};const cur=prev[k];const curKind=cur?(typeof cur==="string"?cur:cur.kind):null;const curType=cur&&typeof cur==="object"?cur.type:null;if(curKind===kind&&curType===type)delete next[k];else next[k]={kind,type};return next;});
   const clearWorkout=k=>setWorkouts(prev=>{const next={...prev};delete next[k];return next;});
-  const RES_TYPES=["Upper","Lower","Belly"];const CARDIO_TYPES=["Running","Tennis","Cycling"];
+  const RES_TYPES=["Upper Body","Lower Body","Full Body","Belly"];const CARDIO_TYPES=["Running","Tennis","Cycling"];
 
   // ---- protein ----
   const proteinColor=g=>g==null||g===""?LINE:g<pMin?RED:g>=pTarget?GREEN:YELLOW;
@@ -325,8 +325,8 @@ export default function TimeTracker(){
             <p className="sans" style={{margin:"0 0 12px",fontSize:12,color:MUTED}}>Pick a resistance or cardio type. Tap the same one again to clear the day.</p>
             <div className="sans" style={{marginBottom:12}}>
               <div style={{fontSize:12,color:MUTED,marginBottom:6}}>💪 Resistance</div>
-              <div style={{display:"flex",gap:8}}>
-                {RES_TYPES.map(tp=>{const on=wKind(date)==="resistance"&&wType(date)===tp;return(<button key={tp} onClick={()=>setWorkoutFull(date,"resistance",tp)} style={{flex:1,padding:"14px 8px",borderRadius:10,fontSize:14,border:`1px solid ${on?ACCENT:LINE}`,background:on?ACCENT:"#fff",color:on?"#fff":INK}}>{tp}</button>);})}
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {RES_TYPES.map(tp=>{const on=wKind(date)==="resistance"&&wType(date)===tp;return(<button key={tp} onClick={()=>setWorkoutFull(date,"resistance",tp)} style={{flex:"1 1 40%",minWidth:100,padding:"14px 8px",borderRadius:10,fontSize:14,border:`1px solid ${on?ACCENT:LINE}`,background:on?ACCENT:"#fff",color:on?"#fff":INK}}>{tp}</button>);})}
               </div>
             </div>
             <div className="sans">
