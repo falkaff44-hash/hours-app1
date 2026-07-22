@@ -155,7 +155,7 @@ export default function TimeTracker(){
   const importData=e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result);if(p.cats)setCats(p.cats);if(p.log)setLog(p.log);if(p.goals)setGoals(p.goals);if(typeof p.startHour==="number")setStartHour(p.startHour);if(p.workouts)setWorkouts(p.workouts);if(p.protein)setProtein(p.protein);if(typeof p.pMin==="number")setPMin(p.pMin);if(typeof p.pTarget==="number")setPTarget(p.pTarget);if(p.periods)setPeriods(p.periods);if(p.books)setBooks(p.books);if(p.reading)setReading(p.reading);}catch{alert("That file couldn't be read. Pick a backup file.");}};r.readAsText(f);e.target.value="";};
 
   const goalCats=cats.filter(c=>goals[c]>0);
-  const TABS=[["day","Day"],["reading","Reading"],["workout","Workout"],["protein","Protein"],["cycle","Cycle"]];
+  const TABS=[["day","Day"],["reading","Reading"],["workout","Workout"],["cycle","Cycle"]];
 
   // build a month calendar grid for the displayed month
   const monthCalendar=useMemo(()=>{
@@ -228,8 +228,7 @@ export default function TimeTracker(){
             <div style={{fontSize:20}}>{fmtDate(date)}</div>
             <div className="mono" style={{fontSize:11,color:MUTED,marginTop:2}}>
               {tab==="day"&&`${logged}/96 slots · ${(logged*0.25).toFixed(2)}h`}
-              {tab==="workout"&&`${daysLogged} days tracked`}
-              {tab==="protein"&&(protein[date]!=null?`${protein[date]} g today`:"no protein logged")}
+              {tab==="workout"&&(protein[date]!=null?`${daysLogged} days · ${protein[date]}g protein`:`${daysLogged} days tracked`)}
               {tab==="cycle"&&(cycleInfo?.avg?`~${cycleInfo.avg}-day cycle`:"log to estimate")}
             </div>
           </div>
@@ -354,16 +353,15 @@ export default function TimeTracker(){
                 let bg="transparent"; if(kind==="resistance")bg=ACCENT; else if(kind==="cardio")bg=RED; else if(k)bg="#fff";
                 const ttl=k?(kind?`${k} · ${kind}${tp?" ("+tp+")":""}`:k):"";
                 const letter=tp?tp[0]:"";
-                return(<div key={i} onClick={()=>{if(k)setDate(k);}} title={ttl} style={{aspectRatio:"1",borderRadius:6,border:k?`1px solid ${LINE}`:"none",background:bg,color:kind?"#fff":MUTED,fontSize:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:k?"pointer":"default",lineHeight:1}}>{k?Number(k.slice(8)):""}{letter&&<span style={{fontSize:7,opacity:0.9}}>{letter}</span>}</div>);
+                const g=k&&protein[k]!=null?`${protein[k]}g`:"";
+                return(<div key={i} onClick={()=>{if(k)setDate(k);}} title={ttl} style={{aspectRatio:"1",borderRadius:6,border:k?`1px solid ${LINE}`:"none",background:bg,color:kind?"#fff":INK,fontSize:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:k?"pointer":"default",lineHeight:1.05}}>{k?Number(k.slice(8)):""}{letter&&<span style={{fontSize:7,opacity:0.9}}>{letter}</span>}{g&&<span style={{fontSize:6,color:kind?"#fff":MUTED,opacity:0.85}}>{g}</span>}</div>);
               })}
             </div>
             <p className="sans" style={{marginTop:10,fontSize:11,color:MUTED}}><span style={{color:ACCENT}}>■</span> resistance &nbsp; <span style={{color:RED}}>■</span> cardio · {monthWorkoutDays.length} gym days this month · tap a date to open it and set the type</p>
           </div>
-        </>)}
 
-        {/* ============ PROTEIN TAB ============ */}
-        {tab==="protein"&&(<>
-          <div style={{marginBottom:28}}>
+          {/* --- Protein (merged in) --- */}
+          <div style={{borderTop:`1px solid ${LINE}`,marginTop:30,paddingTop:24}}>
             <h2 style={{margin:"0 0 6px",fontSize:22}}>Protein · {fmtDate(date)}</h2>
             <p className="sans" style={{margin:"0 0 14px",fontSize:12,color:MUTED}}>Type today's total grams. The bar fills and colors by your thresholds (min {pMin}g, target {pTarget}g).</p>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
@@ -374,9 +372,7 @@ export default function TimeTracker(){
               <div style={{width:`${Math.min(100,((protein[date]||0)/Math.max(pTarget*1.3,1))*100)}%`,height:"100%",background:proteinColor(protein[date]),borderRadius:11,transition:"width .3s, background .3s"}}/>
             </div>
             <div className="sans" style={{display:"flex",justifyContent:"space-between",fontSize:10,color:MUTED,marginTop:4}}><span>0</span><span>min {pMin}</span><span>target {pTarget}</span></div>
-          </div>
-          <div>
-            <h2 style={{margin:"0 0 12px",fontSize:22}}>{monthKey(date)} · daily intake</h2>
+            <h3 style={{margin:"24px 0 12px",fontSize:16}}>{monthKey(date)} · daily intake</h3>
             {monthProtein.length===0?(<div className="sans" style={{padding:"30px",textAlign:"center",color:MUTED,border:`1px dashed ${LINE}`,borderRadius:10}}>No protein logged this month yet.</div>):(
               <div style={{height:280}}><ResponsiveContainer><LineChart data={monthProtein} margin={{left:0,right:16,top:10}}><XAxis dataKey="day" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}}/><Tooltip formatter={v=>`${v} g`} labelFormatter={l=>`Day ${l}`}/><ReferenceLine y={pMin} stroke={RED} strokeDasharray="4 4" label={{value:"min",fontSize:10,fill:RED}}/><ReferenceLine y={pTarget} stroke={GREEN} strokeDasharray="4 4" label={{value:"target",fontSize:10,fill:GREEN}}/><Line type="monotone" dataKey="grams" stroke={ACCENT} strokeWidth={2} dot={{r:3}}/></LineChart></ResponsiveContainer></div>
             )}
